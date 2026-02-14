@@ -1,0 +1,8 @@
+title: inaniloquent
+author: inaniloquent
+description: >-
+  Notes on AI Infrastructure, C++, and Open Source.
+theme: jekyll-theme-primer
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
