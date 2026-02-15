@@ -1,4 +1,8 @@
 ---
+layout: default
+title: "从 0 到 1：PINN 的计算图抽取与 GitHub 贡献实战"
+date: 2026-02-14 12:00:00 +0800
+---
 
 # 从 0 到 1：PINN 的计算图抽取与 GitHub 贡献实战
 
