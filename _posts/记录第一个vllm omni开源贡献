@@ -1,0 +1,43 @@
+# 🚀 开源贡献总结：记 vLLM-Omni 项目首次 PR 提交与架构重构
+
+## 📌 背景与目标
+* **项目：** `vllm-project/vllm-omni` (大型 AI 推理与服务开源框架)
+* **Issue 目标：** `[Feature] Trigger Model-Specific Performance Tests via Tags`
+* **核心痛点：** 避免每次提交 PR 时都运行繁重的全量性能测试，节省 CI/GPU 资源和开发者等待时间。
+* **我的贡献：** 实现按需触发的轻量级自动化测试路由脚本。
+
+## 💡 核心收获
+这次 PR 经历远超单纯的“写代码”，它是一次完整的开源社区协作实战。我不仅掌握了如何跨分支同步 PR，还深刻理解了大型项目在 CI 基础设施（GitHub Actions vs. Buildkite）上的架构考量。
+
+---
+
+## 🛠️ 核心 PR 提交流程与踩坑实录（Step-by-Step）
+
+### Phase 1: 初版实现与提交 (The Initial PR)
+1. **Fork 与本地开发：** Fork 官方仓库，在本地开发了基于 GitHub Actions (GHA) 的评论触发逻辑（监听 `issue_comment`，解析 `/test-perf` 命令）。
+2. **发起跨仓库 PR：** 将本地修改 push 到个人的 `patch-2` 分支，并在 GitHub 网页端向官方主仓库发起 Pull Request (#2506)。
+3. **完善 PR 描述：** 严格按照官方的 `PULL_REQUEST_TEMPLATE`，清晰地列出 Purpose（目的）、Key Features（核心特性）和 Test Plan（测试计划）。
+
+### Phase 2: 拥抱社区反馈与架构迁移 (The Pivot)
+1. **接收 Code Review：** 项目核心协作者指出，为了统一 CI 基础设施并调用自托管的 GPU 集群，应避免引入新的 GHA workflow，而应修改现有的 Buildkite YAML 配置文件。
+2. **果断重构：** 认同维护者的架构视角，删除原有的 `.github/workflows` 文件，将解析和路由逻辑完整迁移至 `.buildkite/test-perf.yml` 和 `pipeline.yml`。
+    * *技术难点：* 在纯 Bash 脚本中复现路由逻辑，并正确挂载官方的 Docker 镜像和 HuggingFace 缓存目录。
+
+### Phase 3: 解决分支同步与内部合并 (The Git Magic)
+在重构过程中，由于网页端操作失误，将新代码提交到了个人仓库的 `main` 分支，导致官方绑定了 `patch-2` 分支的 PR 没有更新。
+1. **认知升级：** 明确了官方 PR 是一个“实时监控特定分支的摄像头”，只要更新了绑定的 `patch-2` 分支，官方 PR 就会自动更新。
+2. **利用 URL 强制内部合并：** * 构造特定 URL：`https://github.com/[用户名]/vllm-omni/compare/patch-2...main`
+    * 发起**内部 PR**，将 `main` 分支的重构代码无缝 Merge 到 `patch-2` 分支。
+3. **自动同步：** 完成内部合并后，官方的 #2506 PR 瞬间自动同步了所有的增删改记录（Files changed 完美变更为重构后的状态）。
+
+### Phase 4: 发现底层机制差异与专业沟通 (The Communication)
+1. **发现盲区：** 在测试中发现，Buildkite 环境变量 `BUILDKITE_MESSAGE` 获取的是 **Git Commit Message**，而非 PR 评论（Comment），导致原定的“评论触发”机制失效。
+2. **主动修正：** 展现代码洁癖，立刻修改 `pipeline.yml` 中的注释，严谨地将 `comment` 更正为 `commit message`，并再次同步到 PR。
+3. **专业回复：** 没有掩盖技术限制，而是向维护者坦诚透明地沟通了底层架构差异。
+    * 告知当前的实际触发方式（如：`git commit --allow-empty -m "/test-perf qwen3-omni"`）。
+    * 将架构决策权交还给社区（是保持纯 Buildkite，还是采用 GHA + Buildkite 的混合方案）。
+
+---
+
+## 🌟 总结与感悟
+这是我首次向 vLLM 级别的核心开源项目提交 PR。最大的体悟是：**在开源世界里，及时的沟通、对项目既有架构的尊重，以及处理 Git 分支同步的工程能力，比单纯写出能跑的代码更加重要。** 这次经历不仅成功交付了需求，更让我在 CI/CD 系统差异和 GitHub 高级流转机制上积累了实战经验，是一次极其成功的开源初体验。
